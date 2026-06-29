@@ -1,11 +1,7 @@
-const zones = {
-  main_hall: "Основна зала",
-  terrace: "Тераса",
-  vip: "VIP",
-  bar: "Бар",
-};
+import Link from "next/link";
+import { zones } from "@/lib/tables";
 
-export default function TableCard({ number, capacity, location, description, available = true }) {
+export default function TableCard({ id, number, capacity, location, description, available = true }) {
   return (
     <div className={`bg-white border border-gray-200 rounded-lg overflow-hidden ${!available ? "opacity-60" : ""}`}>
       <div className="h-24 bg-slate-100 flex items-center justify-center">
@@ -21,7 +17,14 @@ export default function TableCard({ number, capacity, location, description, ava
           )}
         </div>
         <p className="text-gray-600 text-sm mb-3">{description}</p>
-        <span className="text-slate-700 font-semibold text-sm">На {capacity} осіб</span>
+        <div className="flex justify-between items-center">
+          <span className="text-slate-700 font-semibold text-sm">На {capacity} осіб</span>
+          {id && (
+            <Link href={`/tables/${id}`} className="text-sm text-slate-700 hover:text-slate-900 font-medium">
+              Детальніше →
+            </Link>
+          )}
+        </div>
       </div>
     </div>
   );

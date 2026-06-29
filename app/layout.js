@@ -14,7 +14,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Ресторан «Веранда» — бронювання столів",
+  title: {
+    default: "Ресторан «Веранда» — бронювання столів",
+    template: "%s | Веранда",
+  },
   description: "Онлайн-бронювання столів у ресторані «Веранда»",
 };
 

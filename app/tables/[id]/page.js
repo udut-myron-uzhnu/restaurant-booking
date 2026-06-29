@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTableById, zones } from "@/lib/tables";
+import FavoriteButton from "@/components/FavoriteButton";
 
 export async function generateMetadata({ params }) {
   const { id } = await params;
@@ -24,7 +25,10 @@ export default async function TablePage({ params }) {
           <Link href="/tables" className="text-slate-300 hover:text-white">
             ← Назад до столів
           </Link>
-          <h1 className="text-4xl font-bold mt-4">Стіл №{table.number}</h1>
+          <div className="flex items-center gap-3 mt-4">
+            <h1 className="text-4xl font-bold">Стіл №{table.number}</h1>
+            <FavoriteButton tableId={table.id} />
+          </div>
           <span className="text-slate-300">{zones[table.location]}</span>
         </div>
       </section>

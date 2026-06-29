@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getTableById, zones } from "@/lib/tables";
+import TableActions from "@/components/TableActions";
 
 export default async function TableDetailPage({ params }) {
   const { id } = await params;
@@ -18,10 +19,7 @@ export default async function TableDetailPage({ params }) {
       <div className="bg-white rounded-lg border border-gray-200 p-8">
         <div className="flex justify-between items-start mb-6">
           <h1 className="text-3xl font-bold text-gray-900">Стіл №{table.number}</h1>
-          <div className="space-x-2">
-            <button className="bg-slate-700 text-white px-4 py-2 rounded hover:bg-slate-800">Редагувати</button>
-            <button className="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300">Видалити</button>
-          </div>
+          <TableActions tableId={table.id} />
         </div>
         <div className="grid grid-cols-2 gap-6">
           <div>

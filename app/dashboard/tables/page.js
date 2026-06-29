@@ -5,7 +5,8 @@ export const metadata = {
   title: "Керування столами",
 };
 
-export default function DashboardTablesPage() {
+export default async function DashboardTablesPage() {
+  await new Promise((resolve) => setTimeout(resolve, 1000));
   return (
     <div>
       <div className="flex justify-between items-center mb-6">

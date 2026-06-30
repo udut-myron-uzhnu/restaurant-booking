@@ -5,8 +5,7 @@ export const metadata = {
   title: "Панель керування",
 };
 
-export default async function DashboardPage() {
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+export default function DashboardPage() {
   const stats = getTableStats();
 
   return (

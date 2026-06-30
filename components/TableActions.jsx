@@ -7,6 +7,10 @@ export default function TableActions({ tableId }) {
   const [showConfirm, setShowConfirm] = useState(false)
   const router = useRouter()
 
+  function handleEdit() {
+    router.push(`/dashboard/tables/${tableId}/edit`)
+  }
+
   async function handleDelete() {
     try {
       const response = await fetch(`/api/tables/${tableId}`, { method: 'DELETE' })
@@ -34,7 +38,7 @@ export default function TableActions({ tableId }) {
 
   return (
     <div className="space-x-2">
-      <button className="bg-slate-700 text-white px-4 py-2 rounded hover:bg-slate-800 cursor-pointer">
+      <button onClick={handleEdit} className="bg-slate-700 text-white px-4 py-2 rounded hover:bg-slate-800 cursor-pointer">
         Редагувати
       </button>
       <button onClick={() => setShowConfirm(true)} className="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300 cursor-pointer">

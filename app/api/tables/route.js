@@ -1,56 +1,40 @@
-import { NextResponse } from "next/server";
-import { tables, zones, addTable } from "@/lib/tables";
+import dbConnect from "@/lib/db";
+import Table from "@/lib/models/Table";
 
-// GET /api/tables — list with optional zone filter and search
+// GET /api/tables  (?location=terrace, ?search=...)
 export async function GET(request) {
+  await dbConnect();
   const { searchParams } = new URL(request.url);
   const location = searchParams.get("location");
   const search = searchParams.get("search");
 
-  let result = [...tables];
-
-  if (location && location !== "Всі") {
-    result = result.filter((table) => table.location === location);
+  const filter = {};
+  if (location) {
+    filter.location = location;
   }
-
   if (search) {
-    result = result.filter(
-      (table) =>
-        String(table.number).includes(search) ||
-        zones[table.location].toLowerCase().includes(search.toLowerCase())
-    );
+    filter.description = { $regex: search, $options: "i" };
   }
 
-  return NextResponse.json(result);
+  const tables = await Table.find(filter).sort({ number: 1 });
+  return Response.json({ count: tables.length, tables });
 }
 
-// POST /api/tables — create a table
+// POST /api/tables
 export async function POST(request) {
+  await dbConnect();
   try {
     const body = await request.json();
-
-    if (!body.number || !body.capacity || !body.location) {
-      return NextResponse.json(
-        { error: "Поля number, capacity та location є обов'язковими" },
-        { status: 400 }
-      );
-    }
-    if (Number(body.capacity) <= 0) {
-      return NextResponse.json(
-        { error: "Місткість має бути додатнім числом" },
-        { status: 400 }
-      );
-    }
-    if (tables.some((table) => table.number === Number(body.number))) {
-      return NextResponse.json(
-        { error: "Стіл з таким номером уже існує" },
-        { status: 400 }
-      );
-    }
-
-    const newTable = addTable(body);
-    return NextResponse.json(newTable, { status: 201 });
+    const table = await Table.create(body);
+    return Response.json(table, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: "Невалідний JSON" }, { status: 400 });
+    if (error.name === "ValidationError") {
+      const messages = Object.values(error.errors).map((err) => err.message);
+      return Response.json({ errors: messages }, { status: 400 });
+    }
+    if (error.code === 11000) {
+      return Response.json({ errors: ["Стіл з таким номером уже існує"] }, { status: 400 });
+    }
+    return Response.json({ error: "Помилка сервера" }, { status: 500 });
   }
 }

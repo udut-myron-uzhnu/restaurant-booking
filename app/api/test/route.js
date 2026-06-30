@@ -1,8 +1,17 @@
-import { NextResponse } from "next/server";
+import dbConnect from "@/lib/db";
 
 export async function GET() {
-  return NextResponse.json({
-    message: "API працює! Ресторан «Веранда»",
-    timestamp: new Date().toISOString(),
-  });
+  try {
+    await dbConnect();
+    return Response.json({
+      message: "MongoDB підключено!",
+      status: "ok",
+      timestamp: new Date().toISOString(),
+    });
+  } catch (error) {
+    return Response.json(
+      { message: "Помилка підключення до MongoDB", error: error.message },
+      { status: 500 }
+    );
+  }
 }

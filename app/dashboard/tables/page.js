@@ -15,7 +15,8 @@ export default function DashboardTablesPage() {
       setLoading(true)
       const response = await fetch('/api/tables')
       if (!response.ok) throw new Error('Помилка завантаження')
-      setTables(await response.json())
+      const data = await response.json()
+      setTables(data.tables)
     } catch (err) {
       setError(err.message)
     } finally {
@@ -76,23 +77,23 @@ export default function DashboardTablesPage() {
           </thead>
           <tbody>
             {tables.map((table) => (
-              <tr key={table.id} className="border-t border-gray-200 hover:bg-gray-50">
+              <tr key={table._id} className="border-t border-gray-200 hover:bg-gray-50">
                 <td className="px-6 py-4">
-                  <Link href={`/dashboard/tables/${table.id}`} className="text-slate-700 hover:underline font-medium">
+                  <Link href={`/dashboard/tables/${table._id}`} className="text-slate-700 hover:underline font-medium">
                     Стіл №{table.number}
                   </Link>
                 </td>
                 <td className="px-6 py-4 text-gray-600">{zones[table.location]}</td>
                 <td className="px-6 py-4 text-gray-600">{table.capacity} осіб</td>
                 <td className="px-6 py-4">
-                  {table.available ? (
+                  {table.isAvailable ? (
                     <span className="text-xs px-2 py-1 rounded bg-green-100 text-green-700">Вільний</span>
                   ) : (
                     <span className="text-xs px-2 py-1 rounded bg-gray-200 text-gray-600">Зайнятий</span>
                   )}
                 </td>
                 <td className="px-6 py-4">
-                  <button onClick={() => handleDelete(table.id)} className="text-red-700 hover:text-red-900 cursor-pointer">
+                  <button onClick={() => handleDelete(table._id)} className="text-red-700 hover:text-red-900 cursor-pointer">
                     Видалити
                   </button>
                 </td>

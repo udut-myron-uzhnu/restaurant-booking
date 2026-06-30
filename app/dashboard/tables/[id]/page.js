@@ -43,22 +43,18 @@ export default function TableDetailPage({ params }) {
       <div className="text-center py-12">
         <h1 className="text-4xl font-bold text-gray-400 mb-4">404</h1>
         <p className="text-gray-600 mb-4">{error}</p>
-        <Link href="/dashboard/tables" className="text-slate-700 hover:underline">
-          ← До списку столів
-        </Link>
+        <Link href="/dashboard/tables" className="text-slate-700 hover:underline">← До списку столів</Link>
       </div>
     )
   }
 
   return (
     <div>
-      <Link href="/dashboard/tables" className="text-slate-700 hover:underline">
-        ← Назад до списку
-      </Link>
+      <Link href="/dashboard/tables" className="text-slate-700 hover:underline">← Назад до списку</Link>
       <div className="bg-white rounded-lg border border-gray-200 p-8 mt-4">
         <div className="flex justify-between items-start mb-6">
           <h1 className="text-3xl font-bold text-gray-900">Стіл №{table.number}</h1>
-          <TableActions tableId={table.id} />
+          <TableActions tableId={table._id} />
         </div>
         <div className="grid grid-cols-2 gap-6">
           <div>
@@ -71,7 +67,7 @@ export default function TableDetailPage({ params }) {
           </div>
           <div>
             <p className="text-sm text-gray-500">Статус</p>
-            {table.available ? (
+            {table.isAvailable ? (
               <span className="text-green-700 font-semibold">Вільний</span>
             ) : (
               <span className="text-gray-500 font-semibold">Зайнятий</span>

@@ -1,43 +1,55 @@
-import { NextResponse } from "next/server";
-import { getTableById, updateTable, deleteTable } from "@/lib/tables";
+import dbConnect from "@/lib/db";
+import Table from "@/lib/models/Table";
 
-// GET /api/tables/[id] — one table by id
+// GET /api/tables/[id]
 export async function GET(request, { params }) {
+  await dbConnect();
   const { id } = await params;
-  const table = getTableById(id);
-  if (!table) {
-    return NextResponse.json({ error: "Стіл не знайдено" }, { status: 404 });
+  try {
+    const table = await Table.findById(id);
+    if (!table) {
+      return Response.json({ error: "Стіл не знайдено" }, { status: 404 });
+    }
+    return Response.json(table);
+  } catch (error) {
+    return Response.json({ error: "Невалідний ID" }, { status: 400 });
   }
-  return NextResponse.json(table);
 }
 
-// PUT /api/tables/[id] — update a table
+// PUT /api/tables/[id]
 export async function PUT(request, { params }) {
+  await dbConnect();
   const { id } = await params;
   try {
     const body = await request.json();
-    if (!body.number || !body.capacity || !body.location) {
-      return NextResponse.json(
-        { error: "Поля number, capacity та location є обов'язковими" },
-        { status: 400 }
-      );
+    const table = await Table.findByIdAndUpdate(id, body, {
+      new: true,
+      runValidators: true,
+    });
+    if (!table) {
+      return Response.json({ error: "Стіл не знайдено" }, { status: 404 });
     }
-    const updated = updateTable(id, body);
-    if (!updated) {
-      return NextResponse.json({ error: "Стіл не знайдено" }, { status: 404 });
-    }
-    return NextResponse.json(updated);
+    return Response.json(table);
   } catch (error) {
-    return NextResponse.json({ error: "Невалідний JSON" }, { status: 400 });
+    if (error.name === "ValidationError") {
+      const messages = Object.values(error.errors).map((err) => err.message);
+      return Response.json({ errors: messages }, { status: 400 });
+    }
+    return Response.json({ error: "Помилка сервера" }, { status: 500 });
   }
 }
 
-// DELETE /api/tables/[id] — delete a table
+// DELETE /api/tables/[id]
 export async function DELETE(request, { params }) {
+  await dbConnect();
   const { id } = await params;
-  const deleted = deleteTable(id);
-  if (!deleted) {
-    return NextResponse.json({ error: "Стіл не знайдено" }, { status: 404 });
+  try {
+    const table = await Table.findByIdAndDelete(id);
+    if (!table) {
+      return Response.json({ error: "Стіл не знайдено" }, { status: 404 });
+    }
+    return Response.json({ message: `Стіл №${table.number} видалено` });
+  } catch (error) {
+    return Response.json({ error: "Невалідний ID" }, { status: 400 });
   }
-  return NextResponse.json({ message: `Стіл №${deleted.number} видалено`, deleted });
 }

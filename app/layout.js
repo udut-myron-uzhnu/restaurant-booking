@@ -3,6 +3,7 @@ import "./globals.css";
 import Header from "@/components/Header";
 import Footer from "@/components/Footer";
 import { FavoritesProvider } from "@/contexts/FavoritesContext";
+import AuthProvider from "@/components/AuthProvider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -29,11 +30,13 @@ export default function RootLayout({ children }) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <FavoritesProvider>
-          <Header />
-          <main className="flex-1">{children}</main>
-          <Footer />
-        </FavoritesProvider>
+        <AuthProvider>
+          <FavoritesProvider>
+            <Header />
+            <main className="flex-1">{children}</main>
+            <Footer />
+          </FavoritesProvider>
+        </AuthProvider>
       </body>
     </html>
   );

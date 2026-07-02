@@ -1,6 +1,8 @@
+import bcrypt from "bcryptjs";
 import dbConnect from "@/lib/db";
 import Table from "@/lib/models/Table";
 import Reservation from "@/lib/models/Reservation";
+import User from "@/lib/models/User";
 
 const initialTables = [
   { number: 1, capacity: 2, location: "main_hall", description: "Затишний стіл біля вікна.", isAvailable: true },
@@ -24,6 +26,16 @@ export async function GET() {
 
     const tables = await Table.create(initialTables);
 
+    // Тиждень 9: тестові користувачі з різними ролями
+    await User.deleteMany({});
+    const hashedPassword = await bcrypt.hash("password123", 12);
+    const users = await User.create([
+      { name: "Мирослав Удут", email: "admin@veranda.test", password: hashedPassword, role: "admin" },
+      { name: "Олена Ковальчук", email: "olena@veranda.test", password: hashedPassword, role: "user" },
+      { name: "Іван Петренко", email: "ivan@veranda.test", password: hashedPassword, role: "user" },
+      { name: "Софія Мельник", email: "sofia@veranda.test", password: hashedPassword, role: "user" },
+    ]);
+
     const reservations = await Reservation.create([
       { table: tables[3]._id, guestName: "Іван Петренко", date: "2026-06-30", time: "18:00", guestCount: 2, status: "confirmed" },
       { table: tables[7]._id, guestName: "Марія Коваль", date: "2026-06-30", time: "19:30", guestCount: 5, status: "pending" },
@@ -31,7 +43,11 @@ export async function GET() {
     ]);
 
     return Response.json({
-      message: `Базу наповнено: ${tables.length} столів, ${reservations.length} бронювань`,
+      message: `Базу наповнено: ${tables.length} столів, ${reservations.length} бронювань, ${users.length} користувачів`,
+      testAccounts: [
+        { email: "admin@veranda.test", password: "password123", role: "admin" },
+        { email: "olena@veranda.test", password: "password123", role: "user" },
+      ],
       tables,
     });
   } catch (error) {

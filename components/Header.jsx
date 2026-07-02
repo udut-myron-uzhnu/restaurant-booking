@@ -45,13 +45,23 @@ export default function Header() {
           {status === "loading" ? (
             <span className="text-slate-300 text-sm">...</span>
           ) : session ? (
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3">
               <Link
                 href="/dashboard"
                 className="text-slate-300 hover:text-white transition"
               >
                 {session.user.name}
               </Link>
+              {/* Тиждень 9: badge ролі */}
+              <span
+                className={`text-xs px-2 py-0.5 rounded-full ${
+                  session.user.role === "admin"
+                    ? "bg-red-500 text-white"
+                    : "bg-slate-600 text-slate-100"
+                }`}
+              >
+                {session.user.role}
+              </span>
               <button
                 onClick={() => signOut({ callbackUrl: "/" })}
                 className="bg-slate-700 hover:bg-slate-600 px-3 py-1 rounded text-sm transition"

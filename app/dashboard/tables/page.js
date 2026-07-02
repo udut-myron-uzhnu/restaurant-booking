@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { useSession } from 'next-auth/react'
 
 const zones = { main_hall: "Основна зала", terrace: "Тераса", vip: "VIP", bar: "Бар" }
 
@@ -9,6 +10,8 @@ export default function DashboardTablesPage() {
   const [tables, setTables] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const { data: session } = useSession()
+  const isAdmin = session?.user?.role === 'admin'
 
   async function fetchTables() {
     try {
@@ -60,9 +63,11 @@ export default function DashboardTablesPage() {
     <div>
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-900">Столи ({tables.length})</h1>
-        <Link href="/dashboard/tables/new" className="bg-slate-700 text-white px-4 py-2 rounded hover:bg-slate-800">
-          Додати стіл
-        </Link>
+        {isAdmin && (
+          <Link href="/dashboard/tables/new" className="bg-slate-700 text-white px-4 py-2 rounded hover:bg-slate-800">
+            Додати стіл
+          </Link>
+        )}
       </div>
       <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
         <table className="w-full">
@@ -72,7 +77,9 @@ export default function DashboardTablesPage() {
               <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">Зона</th>
               <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">Місткість</th>
               <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">Статус</th>
-              <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">Дії</th>
+              {isAdmin && (
+                <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">Дії</th>
+              )}
             </tr>
           </thead>
           <tbody>
@@ -92,11 +99,13 @@ export default function DashboardTablesPage() {
                     <span className="text-xs px-2 py-1 rounded bg-gray-200 text-gray-600">Зайнятий</span>
                   )}
                 </td>
-                <td className="px-6 py-4">
-                  <button onClick={() => handleDelete(table._id)} className="text-red-700 hover:text-red-900 cursor-pointer">
-                    Видалити
-                  </button>
-                </td>
+                {isAdmin && (
+                  <td className="px-6 py-4">
+                    <button onClick={() => handleDelete(table._id)} className="text-red-700 hover:text-red-900 cursor-pointer">
+                      Видалити
+                    </button>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

@@ -1,7 +1,8 @@
 import dbConnect from "@/lib/db";
 import Table from "@/lib/models/Table";
+import { authorize } from "@/lib/authorize";
 
-// GET /api/tables  (?location=terrace, ?search=...)
+// GET /api/tables  (?location=terrace, ?search=...) — публічний
 export async function GET(request) {
   await dbConnect();
   const { searchParams } = new URL(request.url);
@@ -20,8 +21,11 @@ export async function GET(request) {
   return Response.json({ count: tables.length, tables });
 }
 
-// POST /api/tables
+// POST /api/tables — тільки admin
 export async function POST(request) {
+  const { error } = await authorize("admin");
+  if (error) return error;
+
   await dbConnect();
   try {
     const body = await request.json();

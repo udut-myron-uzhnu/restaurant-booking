@@ -2,10 +2,15 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { useSession } from 'next-auth/react'
 
 export default function TableActions({ tableId }) {
   const [showConfirm, setShowConfirm] = useState(false)
   const router = useRouter()
+  const { data: session } = useSession()
+
+  // Тиждень 9: кнопки дій доступні лише адміністратору
+  if (session?.user?.role !== 'admin') return null
 
   function handleEdit() {
     router.push(`/dashboard/tables/${tableId}/edit`)

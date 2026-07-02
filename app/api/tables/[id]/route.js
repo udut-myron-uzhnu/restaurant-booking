@@ -1,7 +1,8 @@
 import dbConnect from "@/lib/db";
 import Table from "@/lib/models/Table";
+import { authorize } from "@/lib/authorize";
 
-// GET /api/tables/[id]
+// GET /api/tables/[id] — публічний
 export async function GET(request, { params }) {
   await dbConnect();
   const { id } = await params;
@@ -16,8 +17,11 @@ export async function GET(request, { params }) {
   }
 }
 
-// PUT /api/tables/[id]
+// PUT /api/tables/[id] — тільки admin
 export async function PUT(request, { params }) {
+  const { error } = await authorize("admin");
+  if (error) return error;
+
   await dbConnect();
   const { id } = await params;
   try {
@@ -39,8 +43,11 @@ export async function PUT(request, { params }) {
   }
 }
 
-// DELETE /api/tables/[id]
+// DELETE /api/tables/[id] — тільки admin
 export async function DELETE(request, { params }) {
+  const { error } = await authorize("admin");
+  if (error) return error;
+
   await dbConnect();
   const { id } = await params;
   try {

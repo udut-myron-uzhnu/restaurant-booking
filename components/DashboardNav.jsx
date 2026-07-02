@@ -1,16 +1,24 @@
+// Компонент DashboardNav — навігація для панелі керування
+// Тиждень 9: додано умовний пункт "Користувачі" для admin
 'use client'
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-
-const links = [
-  { href: "/dashboard", label: "Огляд" },
-  { href: "/dashboard/tables", label: "Столи" },
-  { href: "/dashboard/reservations", label: "Бронювання" },
-];
+import { useSession } from "next-auth/react";
 
 export default function DashboardNav() {
   const pathname = usePathname();
+  const { data: session } = useSession();
+  const isAdmin = session?.user?.role === "admin";
+
+  const links = [
+    { href: "/dashboard", label: "Огляд" },
+    { href: "/dashboard/tables", label: "Столи" },
+    { href: "/dashboard/reservations", label: "Бронювання" },
+    // Пункт "Користувачі" тільки для admin
+    ...(isAdmin ? [{ href: "/dashboard/users", label: "Користувачі" }] : []),
+  ];
+
   return (
     <nav>
       <ul className="space-y-2">

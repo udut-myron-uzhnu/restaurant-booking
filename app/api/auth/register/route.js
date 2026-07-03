@@ -1,28 +1,27 @@
 import bcrypt from "bcryptjs";
 import dbConnect from "@/lib/db";
 import User from "@/lib/models/User";
+import { registerSchema } from "@/lib/validations/user";
+import { stripHtml } from "@/lib/sanitize";
 
 export async function POST(request) {
   try {
-    const { name, email, password } = await request.json();
+    const data = await request.json();
 
-    // Валідація
-    if (!name || !email || !password) {
-      return Response.json({ error: "Всі поля обов'язкові" }, { status: 400 });
+    // Валідація через zod (замість ручної)
+    const result = registerSchema.safeParse(data);
+    if (!result.success) {
+      const messages = result.error.issues.map((e) => e.message);
+      return Response.json({ error: messages.join(", ") }, { status: 400 });
     }
 
-    if (password.length < 6) {
-      return Response.json(
-        { error: "Пароль має містити щонайменше 6 символів" },
-        { status: 400 }
-      );
-    }
+    const { email, password } = result.data;
+    const name = stripHtml(result.data.name);
 
     await dbConnect();
 
     // Перевірка чи email вже зайнятий
     const existingUser = await User.findOne({ email });
-
     if (existingUser) {
       return Response.json(
         { error: "Користувач з таким email вже існує" },
@@ -34,11 +33,7 @@ export async function POST(request) {
     const hashedPassword = await bcrypt.hash(password, 12);
 
     // Створюємо користувача
-    const user = await User.create({
-      name,
-      email,
-      password: hashedPassword,
-    });
+    const user = await User.create({ name, email, password: hashedPassword });
 
     return Response.json(
       {
@@ -53,9 +48,11 @@ export async function POST(request) {
       { status: 201 }
     );
   } catch (error) {
-    if (error.name === "ValidationError") {
-      const messages = Object.values(error.errors).map((err) => err.message);
-      return Response.json({ error: messages.join(", ") }, { status: 400 });
+    if (error.code === 11000) {
+      return Response.json(
+        { error: "Користувач з таким email вже існує" },
+        { status: 409 }
+      );
     }
     return Response.json({ error: "Помилка сервера" }, { status: 500 });
   }

@@ -1,6 +1,8 @@
 import dbConnect from "@/lib/db";
 import Table from "@/lib/models/Table";
 import { authorize } from "@/lib/authorize";
+import { updateTableSchema } from "@/lib/validations/table";
+import { sanitizeObject } from "@/lib/sanitize";
 
 // GET /api/tables/[id] — публічний
 export async function GET(request, { params }) {
@@ -25,8 +27,18 @@ export async function PUT(request, { params }) {
   await dbConnect();
   const { id } = await params;
   try {
-    const body = await request.json();
-    const table = await Table.findByIdAndUpdate(id, body, {
+    const data = await request.json();
+
+    // Валідація через zod
+    const result = updateTableSchema.safeParse(data);
+    if (!result.success) {
+      const messages = result.error.issues.map((e) => e.message);
+      return Response.json({ errors: messages }, { status: 400 });
+    }
+
+    // Санітизація та збереження лише валідованих полів
+    const sanitized = sanitizeObject(result.data);
+    const table = await Table.findByIdAndUpdate(id, sanitized, {
       new: true,
       runValidators: true,
     });

@@ -2,6 +2,7 @@
 import dbConnect from "@/lib/db";
 import User from "@/lib/models/User";
 import { authorize } from "@/lib/authorize";
+import { updateRoleSchema } from "@/lib/validations/user";
 
 // PUT /api/users/[id] — зміна ролі
 export async function PUT(request, { params }) {
@@ -12,15 +13,15 @@ export async function PUT(request, { params }) {
   const { id } = await params;
 
   try {
-    const { role } = await request.json();
+    const data = await request.json();
 
-    // Валідація ролі
-    if (!["user", "admin"].includes(role)) {
-      return Response.json(
-        { error: "Роль має бути 'user' або 'admin'" },
-        { status: 400 }
-      );
+    // Валідація ролі через zod
+    const result = updateRoleSchema.safeParse(data);
+    if (!result.success) {
+      const messages = result.error.issues.map((e) => e.message);
+      return Response.json({ error: messages.join(", ") }, { status: 400 });
     }
+    const { role } = result.data;
 
     // Не дозволяємо змінити роль самому собі
     if (id === session.user.id) {

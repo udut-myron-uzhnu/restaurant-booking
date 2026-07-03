@@ -1,6 +1,8 @@
 import dbConnect from "@/lib/db";
 import Table from "@/lib/models/Table";
 import { authorize } from "@/lib/authorize";
+import { createTableSchema } from "@/lib/validations/table";
+import { sanitizeObject } from "@/lib/sanitize";
 
 // GET /api/tables  (?location=terrace, ?search=...) — публічний
 export async function GET(request) {
@@ -28,16 +30,25 @@ export async function POST(request) {
 
   await dbConnect();
   try {
-    const body = await request.json();
-    const table = await Table.create(body);
-    return Response.json(table, { status: 201 });
-  } catch (error) {
-    if (error.name === "ValidationError") {
-      const messages = Object.values(error.errors).map((err) => err.message);
+    const data = await request.json();
+
+    // Валідація через zod
+    const result = createTableSchema.safeParse(data);
+    if (!result.success) {
+      const messages = result.error.issues.map((e) => e.message);
       return Response.json({ errors: messages }, { status: 400 });
     }
+
+    // Санітизація вмісту рядкових полів
+    const sanitized = sanitizeObject(result.data);
+    const table = await Table.create(sanitized);
+    return Response.json(table, { status: 201 });
+  } catch (error) {
     if (error.code === 11000) {
       return Response.json({ errors: ["Стіл з таким номером уже існує"] }, { status: 400 });
+    }
+    if (error instanceof SyntaxError) {
+      return Response.json({ error: "Невалідний JSON у тілі запиту" }, { status: 400 });
     }
     return Response.json({ error: "Помилка сервера" }, { status: 500 });
   }

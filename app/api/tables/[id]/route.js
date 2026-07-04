@@ -1,8 +1,13 @@
 import dbConnect from "@/lib/db";
 import Table from "@/lib/models/Table";
+import Order from "@/lib/models/Order";
+import OrderItem from "@/lib/models/OrderItem";
 import { authorize } from "@/lib/authorize";
 import { updateTableSchema } from "@/lib/validations/table";
 import { sanitizeObject } from "@/lib/sanitize";
+
+// Реєстрація моделей для каскадного видалення у pre-hook моделі Table
+void [Order, OrderItem];
 
 // GET /api/tables/[id] — публічний
 export async function GET(request, { params }) {

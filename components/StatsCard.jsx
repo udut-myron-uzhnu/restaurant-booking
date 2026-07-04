@@ -2,6 +2,9 @@ const colorClasses = {
   slate: 'text-slate-800',
   green: 'text-green-700',
   gray: 'text-gray-600',
+  red: 'text-red-700',
+  amber: 'text-amber-700',
+  blue: 'text-blue-700',
 }
 
 export default function StatsCard({ title, value, color = 'slate' }) {

@@ -3,6 +3,8 @@ import dbConnect from "@/lib/db";
 import Table from "@/lib/models/Table";
 import Reservation from "@/lib/models/Reservation";
 import User from "@/lib/models/User";
+import Order from "@/lib/models/Order";
+import OrderItem from "@/lib/models/OrderItem";
 
 const initialTables = [
   { number: 1, capacity: 2, location: "main_hall", description: "Затишний стіл біля вікна.", isAvailable: true },
@@ -17,16 +19,33 @@ const initialTables = [
   { number: 10, capacity: 4, location: "main_hall", description: "Стіл біля панорамного вікна.", isAvailable: true },
 ];
 
+// Хелпер: створити Order + його OrderItem-и одним блоком
+async function seedOrder({ user, items, status, notes = "" }) {
+  const totalGuests = items.reduce((sum, it) => sum + it.guestCount, 0);
+  const order = await Order.create({ user: user._id, totalGuests, status, notes });
+  await OrderItem.insertMany(
+    items.map((it) => ({
+      order: order._id,
+      table: it.table._id,
+      guestCount: it.guestCount,
+      capacitySnapshot: it.table.capacity,
+    }))
+  );
+  return order;
+}
+
 export async function GET() {
   try {
     await dbConnect();
 
     await Reservation.deleteMany({});
+    await Order.deleteMany({});
+    await OrderItem.deleteMany({});
     await Table.deleteMany({});
 
     const tables = await Table.create(initialTables);
 
-    // Тиждень 9: тестові користувачі з різними ролями
+    // Тестові користувачі з різними ролями
     await User.deleteMany({});
     const hashedPassword = await bcrypt.hash("password123", 12);
     const users = await User.create([
@@ -42,13 +61,60 @@ export async function GET() {
       { table: tables[0]._id, guestName: "Олег Сидоренко", date: "2026-06-29", time: "13:00", guestCount: 2, status: "completed" },
     ]);
 
+    // Тиждень 11: seed замовлень столів через Order + OrderItem (many-to-many)
+    const [admin, olena, ivan] = users;
+    const ordersData = [
+      // Замовлення з двома столами (many-to-many у дії)
+      {
+        user: olena,
+        items: [
+          { table: tables[4], guestCount: 5 }, // Стіл №5, тераса
+          { table: tables[9], guestCount: 3 }, // Стіл №10, основна зала
+        ],
+        status: "pending",
+        notes: "Святкування дня народження",
+      },
+      // Один стіл
+      { user: olena, items: [{ table: tables[0], guestCount: 2 }], status: "completed" },
+      // Три столи
+      {
+        user: ivan,
+        items: [
+          { table: tables[7], guestCount: 6 }, // VIP №8
+          { table: tables[8], guestCount: 4 }, // VIP №9
+          { table: tables[3], guestCount: 2 }, // Тераса №4
+        ],
+        status: "confirmed",
+        notes: "Корпоративний вечір",
+      },
+      // Один стіл
+      { user: ivan, items: [{ table: tables[1], guestCount: 4 }], status: "seated" },
+      // Два столи
+      {
+        user: ivan,
+        items: [
+          { table: tables[4], guestCount: 6 },
+          { table: tables[9], guestCount: 2 },
+        ],
+        status: "pending",
+      },
+      // Замовлення адміністратора
+      { user: admin, items: [{ table: tables[0], guestCount: 2 }], status: "completed" },
+    ];
+
+    const orders = [];
+    for (const data of ordersData) {
+      orders.push(await seedOrder(data));
+    }
+    const orderItemsCount = await OrderItem.countDocuments({});
+
     return Response.json({
-      message: `Базу наповнено: ${tables.length} столів, ${reservations.length} бронювань, ${users.length} користувачів`,
+      message: `Базу наповнено: ${tables.length} столів, ${reservations.length} бронювань, ${users.length} користувачів, ${orders.length} замовлень`,
       testAccounts: [
         { email: "admin@veranda.test", password: "password123", role: "admin" },
         { email: "olena@veranda.test", password: "password123", role: "user" },
       ],
-      tables,
+      counts: { tables: tables.length, users: users.length, orders: orders.length, orderItems: orderItemsCount },
     });
   } catch (error) {
     return Response.json({ error: error.message }, { status: 500 });

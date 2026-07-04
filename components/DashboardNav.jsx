@@ -14,6 +14,7 @@ export default function DashboardNav() {
   const links = [
     { href: "/dashboard", label: "Огляд" },
     { href: "/dashboard/tables", label: "Столи" },
+    { href: "/dashboard/orders", label: "Замовлення" },
     { href: "/dashboard/reservations", label: "Бронювання" },
     // Пункт "Користувачі" тільки для admin
     ...(isAdmin ? [{ href: "/dashboard/users", label: "Користувачі" }] : []),

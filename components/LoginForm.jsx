@@ -1,46 +1,40 @@
+// Тиждень 12: LoginForm на RHF + Zod resolver + Sonner
 "use client";
 
-import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import Link from "next/link";
+import { loginSchema } from "@/lib/validations/auth";
+import FormField from "@/components/forms/FormField";
 
 export default function LoginForm() {
   const router = useRouter();
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors, isSubmitting },
+  } = useForm({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: "", password: "" },
   });
-  const [error, setError] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError(null);
-    setIsLoading(true);
-
+  const onSubmit = async (data) => {
     try {
-      const result = await signIn("credentials", {
-        email: formData.email,
-        password: formData.password,
-        redirect: false,
-      });
-
+      const result = await signIn("credentials", { ...data, redirect: false });
       if (result?.error) {
-        setError("Невірний email або пароль");
-        setIsLoading(false);
+        setError("password", { type: "server", message: "Невірний email або пароль" });
+        toast.error("Не вдалося увійти");
         return;
       }
-
+      toast.success("Вітаємо у «Веранді»!");
       router.push("/dashboard");
       router.refresh();
     } catch {
-      setError("Щось пішло не так");
-      setIsLoading(false);
+      toast.error("Помилка при вході");
     }
   };
 
@@ -48,47 +42,31 @@ export default function LoginForm() {
     <div className="max-w-md mx-auto mt-10 px-4">
       <div className="bg-white rounded-lg shadow p-8">
         <h1 className="text-2xl font-bold text-center mb-6">Вхід</h1>
-
-        {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-4">
-            {error}
-          </div>
-        )}
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-slate-700 font-bold mb-2">Email</label>
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+          <FormField label="Email" error={errors.email?.message}>
             <input
               type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
-              required
+              autoComplete="email"
+              {...register("email")}
               className="w-full px-4 py-2 border rounded focus:outline-none focus:border-slate-800"
             />
-          </div>
-
-          <div>
-            <label className="block text-slate-700 font-bold mb-2">Пароль</label>
+          </FormField>
+          <FormField label="Пароль" error={errors.password?.message}>
             <input
               type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
-              required
+              autoComplete="current-password"
+              {...register("password")}
               className="w-full px-4 py-2 border rounded focus:outline-none focus:border-slate-800"
             />
-          </div>
-
+          </FormField>
           <button
             type="submit"
-            disabled={isLoading}
-            className="w-full bg-slate-800 text-white py-2 rounded hover:bg-slate-700 font-bold disabled:opacity-50"
+            disabled={isSubmitting}
+            className="w-full bg-slate-800 text-white py-2 rounded hover:bg-slate-700 font-bold disabled:opacity-50 cursor-pointer"
           >
-            {isLoading ? "Вхід..." : "Увійти"}
+            {isSubmitting ? "Вхід..." : "Увійти"}
           </button>
         </form>
-
         <p className="text-center mt-4 text-slate-600">
           Немає акаунту?{" "}
           <Link href="/auth/register" className="text-slate-800 font-semibold hover:underline">

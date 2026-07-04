@@ -3,6 +3,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function RoleToggle({ userId, currentRole, currentUserId }) {
   const [loading, setLoading] = useState(false);
@@ -25,15 +26,15 @@ export default function RoleToggle({ userId, currentRole, currentUserId }) {
       });
 
       if (!response.ok) {
-        const data = await response.json();
-        alert(data.error || "Помилка зміни ролі");
+        const data = await response.json().catch(() => ({}));
+        toast.error(data.error || "Помилка зміни ролі");
         return;
       }
 
-      // Оновлюємо сторінку для відображення нової ролі
+      toast.success(`Роль змінено: ${newRole}`);
       router.refresh();
     } catch (error) {
-      alert("Помилка з'єднання");
+      toast.error("Помилка з'єднання");
     } finally {
       setLoading(false);
     }

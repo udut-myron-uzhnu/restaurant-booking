@@ -4,12 +4,12 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { toast } from 'sonner'
 import Link from 'next/link'
 
 export default function OrderActions({ order, role, currentUserId }) {
   const router = useRouter()
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState('')
 
   const isAdmin = role === 'admin'
   const isOwner = (order.user?._id || order.user || '').toString() === currentUserId
@@ -22,9 +22,10 @@ export default function OrderActions({ order, role, currentUserId }) {
     setLoading(false)
     if (!res.ok) {
       const data = await res.json().catch(() => ({}))
-      setError(data.error || 'Помилка видалення')
+      toast.error(data.error || 'Помилка видалення')
       return
     }
+    toast.success('Замовлення видалено')
     router.push('/dashboard/orders')
     router.refresh()
   }
@@ -40,19 +41,15 @@ export default function OrderActions({ order, role, currentUserId }) {
     setLoading(false)
     if (!res.ok) {
       const data = await res.json().catch(() => ({}))
-      setError(data.errors?.[0] || data.error || 'Помилка скасування')
+      toast.error(data.errors?.[0] || data.error || 'Помилка скасування')
       return
     }
+    toast.success('Замовлення скасовано')
     router.refresh()
   }
 
   return (
     <div>
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-2 rounded mb-3">
-          {error}
-        </div>
-      )}
       <div className="flex gap-3 flex-wrap">
         {isAdmin && (
           <>

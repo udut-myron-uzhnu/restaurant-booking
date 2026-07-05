@@ -1,3 +1,8 @@
+export const metadata = {
+  title: "Про нас",
+  description: "Система онлайн-бронювання столів у ресторані «Веранда».",
+};
+
 export default function AboutPage() {
   return (
     <div className="bg-white py-16">

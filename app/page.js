@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import TableCard from "@/components/TableCard";
 
 const popularTables = [
@@ -10,15 +11,25 @@ const popularTables = [
 export default function Home() {
   return (
     <div>
-      <section className="bg-slate-800 text-white py-20">
-        <div className="max-w-6xl mx-auto px-4 text-center">
+      {/* Тиждень 13: hero з оптимізованим зображенням next/image */}
+      <section className="relative h-[480px] flex items-center justify-center overflow-hidden">
+        <Image
+          src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1600&q=80"
+          alt="Зал ресторану «Веранда» зі столами"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover"
+        />
+        <div className="absolute inset-0 bg-gradient-to-r from-slate-900/85 to-slate-800/60" />
+        <div className="relative max-w-6xl mx-auto px-4 text-center text-white">
           <h1 className="text-5xl font-bold mb-4">Ресторан «Веранда»</h1>
           <p className="text-xl mb-8 text-slate-200">
             Бронювання столів онлайн — оберіть зал, дату та час.
           </p>
           <Link
             href="/tables"
-            className="inline-block bg-white text-slate-800 px-8 py-3 rounded font-semibold"
+            className="inline-block bg-white text-slate-800 px-8 py-3 rounded font-semibold hover:bg-slate-100 transition"
           >
             Переглянути столи
           </Link>

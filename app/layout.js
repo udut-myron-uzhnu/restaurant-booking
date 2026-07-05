@@ -16,12 +16,32 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+
 export const metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
     default: "Ресторан «Веранда» — бронювання столів",
     template: "%s | Веранда",
   },
-  description: "Онлайн-бронювання столів у ресторані «Веранда»",
+  description: "Онлайн-бронювання столів у ресторані «Веранда»: оберіть зал, дату та час.",
+  keywords: ["бронювання столів", "ресторан", "Веранда", "онлайн-бронювання"],
+  authors: [{ name: "Ресторан «Веранда»" }],
+  openGraph: {
+    type: "website",
+    locale: "uk_UA",
+    url: "/",
+    siteName: "Ресторан «Веранда»",
+    title: "Ресторан «Веранда» — бронювання столів",
+    description: "Онлайн-бронювання столів у ресторані «Веранда».",
+    images: [{ url: "/og-image.svg", width: 1200, height: 630, alt: "Ресторан «Веранда»" }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Ресторан «Веранда» — бронювання столів",
+    description: "Онлайн-бронювання столів у ресторані «Веранда».",
+    images: ["/og-image.svg"],
+  },
 };
 
 export default function RootLayout({ children }) {

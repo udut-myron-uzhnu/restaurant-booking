@@ -1,5 +1,10 @@
 import TablesFilter from "@/components/TablesFilter";
 
+export const metadata = {
+  title: "Столи",
+  description: "Перегляньте столи ресторану «Веранда» за зонами та оберіть вільний.",
+};
+
 export default function TablesPage() {
   return (
     <div>

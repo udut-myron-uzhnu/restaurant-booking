@@ -1,5 +1,12 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  // Тиждень 13: дозволені домени для оптимізації зображень next/image
+  images: {
+    remotePatterns: [
+      { protocol: "https", hostname: "images.unsplash.com" },
+    ],
+  },
+  // Тиждень 10: безпекові HTTP-заголовки
   async headers() {
     return [
       {
